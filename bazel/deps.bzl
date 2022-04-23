@@ -82,8 +82,8 @@ def go_dependencies():
     go_repository(
         name = "com_github_golang_glog",
         importpath = "github.com/golang/glog",
-        sum = "h1:VKtxabqXZkF25pY9ekfRL6a582T4P37/31XEstQ5p58=",
-        version = "v0.0.0-20160126235308-23def4e6c14b",
+        sum = "h1:nfP3RFugxnNRyKgeWd4oI1nYvXpxrx8ck8ZrcizshdQ=",
+        version = "v1.0.0",
     )
     go_repository(
         name = "com_github_golang_mock",
@@ -189,9 +189,9 @@ def go_dependencies():
     )
     go_repository(
         name = "org_golang_google_grpc",
+        build_file_proto_mode = "disable",
         importpath = "google.golang.org/grpc",
         sum = "h1:oCjezcn6g6A75TGoKYBPgKmVBLexhYLM6MebdrPApP8=",
-        build_file_proto_mode = "disable",
         version = "v1.46.0",
     )
     go_repository(
@@ -256,6 +256,12 @@ def go_dependencies():
     )
     go_repository(
         name = "org_golang_x_tools",
+        # gazelle spits out ugly warnings for this repo unless certain dirs are
+        # omitted: https://github.com/bazelbuild/bazel-gazelle/issues/610
+        build_extra_args = [
+            "-exclude=**/testdata",
+            "-exclude=go/packages/packagestest",
+        ],
         importpath = "golang.org/x/tools",
         sum = "h1:5Beo0mZN8dRzgrMMkDp0jc8YXQKx9DiJ2k1dkvGsn5A=",
         version = "v0.0.0-20190524140312-2c0ae7006135",
