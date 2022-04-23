@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+service QueryDispatcher {
+  rpc GetQueryJob(GetQueryJobRequest) returns (GetQueryJobResponse);
+  rpc FinishQueryJob(FinishQueryJobRequest) returns (FinishQueryJobResponse);
+}
+
+message GetQueryJobRequest {}
+
+message GetQueryJobResponse {
+  // If there is a job available, this message describes the query the worker
+  // should execute. If not set, there is no job available, and the worker
+  // should sleep.
+  QueryJob job = 1;
+
+  // Regardless of whether there is a job available, the worker should not poll
+  // until after next_poll_time.
+  google.protobuf.Timestamp next_poll_time = 2;
+}
+
+message FinishQueryJobRequest {
+  // The ID of the completed query job.
+  string query_job_id = 1;
+
+  oneof result {
+    // If set, the query was successful, and the result is uploaded to GCS
+    // at this URL in the format `gcs://$BUCKET/$CONTENT_HASH`
+    string query_result_gcs_location = 2;
+
+    // If set, the query was unsuccessful, and this contains the error text.
+    string failure_message = 3;
+  }
+}
+
+message FinishQueryJobResponse {}
+
+message QueryJob {
+  string id = 1;
+
+  // TODO: Query type?
+
+  string query = 2;
+
+  // TODO: Bazel flags?
+
+  GitCommit source = 3;
+}
+
+message GitCommit {
+  string repo = 1;
+  string committish = 2;
+}
