@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package minorhacks.bazel_remote_query;
+
 import "google/protobuf/timestamp.proto";
 
 service QueryDispatcher {
@@ -51,4 +53,19 @@ message QueryJob {
 message GitCommit {
   string repo = 1;
   string committish = 2;
+}
+
+// TODO: Move this to another file?
+message WorkerConfig {
+  // Path to dir that worker can use to clone bazel workspaces and run queries
+  string base_dir = 1;
+
+  // List of git repositories to clone and initialize
+  repeated string git_repository_urls = 2;
+
+  // host:port of the QueryDispatcher service to contact
+  string dispatcher_address = 3;
+
+  // GCS bucket in which results should be placed
+  string results_gcs_bucket = 4;
 }
