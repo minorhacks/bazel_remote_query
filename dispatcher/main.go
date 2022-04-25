@@ -26,46 +26,6 @@ type StaticDispatch struct {
 
 func (d *StaticDispatch) GetQueryJob(ctx context.Context, req *pb.GetQueryJobRequest) (*pb.GetQueryJobResponse, error) {
 	glog.Info("GetQueryJob() called")
-	rand, err := uuid.NewRandom()
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to generate UUID: %v", err)
-	}
-	return &pb.GetQueryJobResponse{
-		Job: &pb.QueryJob{
-			Id:    rand.String(),
-			Query: "deps(//...)",
-			Source: &pb.GitCommit{
-				Repo:       "https://github.com/grpc/grpc",
-				Committish: randomCommit(),
-			},
-		},
-		NextPollTime: timestamppb.New(time.Now().Add(time.Minute)),
-	}, nil
-}
-
-func (d *StaticDispatch) FinishQueryJob(ctx context.Context, req *pb.FinishQueryJobRequest) (*pb.FinishQueryJobResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "FinishQueryJob not implemented")
-}
-
-func main() {
-	flag.Parse()
-	conn, err := net.Listen("tcp", net.JoinHostPort("", *grpcPort))
-	exitIf(err)
-
-	srv := grpc.NewServer()
-	pb.RegisterQueryDispatcherServer(srv, &StaticDispatch{})
-
-	glog.Infof("Listening on port %s", *grpcPort)
-	srv.Serve(conn)
-}
-
-func exitIf(err error) {
-	if err != nil {
-		glog.Exit(err)
-	}
-}
-
-func randomCommit() string {
 	var hashes = []string{
 		"59f714915973cef331764f7d1bee09a178955c33",
 		"e7ddd7b436fde93f777f428b2cf8c0d16b98dc9a",
@@ -168,5 +128,41 @@ func randomCommit() string {
 		"18a8f6aad95d5c2f73f70c3a7fbc58a429da9d56",
 		"114e83d875859f36883cc10ffa089eb534aecaff",
 	}
-	return hashes[rand.Intn(len(hashes))]
+	rand, err := uuid.NewRandom()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to generate UUID: %v", err)
+	}
+	return &pb.GetQueryJobResponse{
+		Job: &pb.QueryJob{
+			Id:    rand.String(),
+			Query: "deps(//...)",
+			Source: &pb.GitCommit{
+				Repo:       "https://github.com/grpc/grpc",
+				Committish: hashes[rand.Intn(len(hashes))],
+			},
+		},
+		NextPollTime: timestamppb.New(time.Now().Add(time.Minute)),
+	}, nil
+}
+
+func (d *StaticDispatch) FinishQueryJob(ctx context.Context, req *pb.FinishQueryJobRequest) (*pb.FinishQueryJobResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "FinishQueryJob not implemented")
+}
+
+func main() {
+	flag.Parse()
+	conn, err := net.Listen("tcp", net.JoinHostPort("", *grpcPort))
+	exitIf(err)
+
+	srv := grpc.NewServer()
+	pb.RegisterQueryDispatcherServer(srv, &StaticDispatch{})
+
+	glog.Infof("Listening on port %s", *grpcPort)
+	srv.Serve(conn)
+}
+
+func exitIf(err error) {
+	if err != nil {
+		glog.Exit(err)
+	}
 }
