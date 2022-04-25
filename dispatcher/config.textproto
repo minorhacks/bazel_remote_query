@@ -1,0 +1,4 @@
+grpc_port: "8082"
+sqlite {
+    db_path: "/home/bminor/tmp/bazel_remote_query_dispatcher.db"
+}

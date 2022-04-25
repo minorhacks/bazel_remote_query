@@ -2,23 +2,28 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"flag"
+	"fmt"
 	"math/rand"
 	"net"
+	"os"
 	"time"
 
 	pb "github.com/minorhacks/bazel_remote_query/proto"
 
 	"github.com/golang/glog"
 	"github.com/google/uuid"
+	_ "github.com/mattn/go-sqlite3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
-	grpcPort = flag.String("grpc_port", "", "Port on which to start gRPC service")
+	configPath = flag.String("config", "", "Path to textproto DispatcherConfig")
 )
 
 type StaticDispatch struct {
@@ -128,13 +133,13 @@ func (d *StaticDispatch) GetQueryJob(ctx context.Context, req *pb.GetQueryJobReq
 		"18a8f6aad95d5c2f73f70c3a7fbc58a429da9d56",
 		"114e83d875859f36883cc10ffa089eb534aecaff",
 	}
-	rand, err := uuid.NewRandom()
+	randNum, err := uuid.NewRandom()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to generate UUID: %v", err)
 	}
 	return &pb.GetQueryJobResponse{
 		Job: &pb.QueryJob{
-			Id:    rand.String(),
+			Id:    randNum.String(),
 			Query: "deps(//...)",
 			Source: &pb.GitCommit{
 				Repo:       "https://github.com/grpc/grpc",
@@ -149,16 +154,99 @@ func (d *StaticDispatch) FinishQueryJob(ctx context.Context, req *pb.FinishQuery
 	return nil, status.Errorf(codes.Unimplemented, "FinishQueryJob not implemented")
 }
 
+type DB interface {
+	Get(context.Context, string /* id */) (string, error)
+	Insert(context.Context, string /* repo */, string /* committish */, string /* query */) (string, error)
+	Update(context.Context, string /* id */, string /* state */, string /* result */) error
+}
+
+type Sqlite struct {
+	db *sql.DB
+}
+
+func NewSqlite(ctx context.Context, dbPath string) (*Sqlite, error) {
+	db, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open sqlite database %q: %w", dbPath, err)
+	}
+	createTableStmt := `
+	CREATE TABLE IF NOT EXISTS "bazel_query_jobs" (
+		repository TEXT,
+		commit_hash TEXT,
+		query_string TEXT,
+		id TEXT,
+		status TEXT,
+		query_result_url TEXT,
+		query_error TEXT,
+		PRIMARY KEY(repository, commit_hash, query_string)
+	);
+	`
+	_, err = db.Exec(createTableStmt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create 'bazel_query_jobs' table: %w", err)
+	}
+
+	return &Sqlite{db: db}, nil
+}
+
+func (s *Sqlite) Get(ctx context.Context, id string) (string, error) {
+	return "", fmt.Errorf("Get() not yet implemented")
+}
+
+func (s *Sqlite) Insert(ctx context.Context, repo string, committish string, query string) (string, error) {
+	return "", fmt.Errorf("Insert() not yet implemented")
+}
+
+func (s *Sqlite) Update(ctx context.Context, id string, state string, result string) error {
+	return fmt.Errorf("Update() not yet implemented")
+}
+
+type DatabaseDispatch struct {
+	db DB
+}
+
+func (d *DatabaseDispatch) GetQueryJob(ctx context.Context, req *pb.GetQueryJobRequest) (*pb.GetQueryJobResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "GetQueryJob not implemented")
+}
+
+func (d *DatabaseDispatch) FinishQueryJob(ctx context.Context, req *pb.FinishQueryJobRequest) (*pb.FinishQueryJobResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "FinishQueryJob not implemented")
+}
+
 func main() {
 	flag.Parse()
-	conn, err := net.Listen("tcp", net.JoinHostPort("", *grpcPort))
+
+	config, err := loadConfig(*configPath)
 	exitIf(err)
 
-	srv := grpc.NewServer()
-	pb.RegisterQueryDispatcherServer(srv, &StaticDispatch{})
+	conn, err := net.Listen("tcp", net.JoinHostPort("", config.GetGrpcPort()))
+	exitIf(err)
 
-	glog.Infof("Listening on port %s", *grpcPort)
+	ctx := context.Background()
+
+	db, err := NewSqlite(ctx, config.GetSqlite().GetDbPath())
+	exitIf(err)
+	service := &DatabaseDispatch{
+		db: db,
+	}
+
+	srv := grpc.NewServer()
+	pb.RegisterQueryDispatcherServer(srv, service)
+
+	glog.Infof("Listening on port %s", config.GetGrpcPort())
 	srv.Serve(conn)
+}
+
+func loadConfig(path string) (*pb.DispatcherConfig, error) {
+	contents, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config %q: %w", path, err)
+	}
+	var config pb.DispatcherConfig
+	if err := prototext.Unmarshal(contents, &config); err != nil {
+		return nil, fmt.Errorf("failed to parse config %q: %w", path, err)
+	}
+	return &config, nil
 }
 
 func exitIf(err error) {

@@ -249,8 +249,8 @@ def go_dependencies():
     go_repository(
         name = "com_github_google_martian_v3",
         importpath = "github.com/google/martian/v3",
-        sum = "h1:d8MncMlErDFTwQGBK1xhv026j9kqhvw1Qv9IbWT1VLQ=",
-        version = "v3.2.1",
+        sum = "h1:IqNFLAmvJOgVlpdEBiQbDc2EwKW77amAycfTuWKdfvw=",
+        version = "v3.3.2",
     )
     go_repository(
         name = "com_github_google_pprof",
@@ -372,6 +372,13 @@ def go_dependencies():
         version = "v1.2.0",
     )
     go_repository(
+        name = "com_github_mattn_go_sqlite3",
+        importpath = "github.com/mattn/go-sqlite3",
+        sum = "h1:TJ1bhYJPV44phC+IMu1u2K/i5RriLTPe+yc68XDJ1Z0=",
+        version = "v1.14.12",
+    )
+
+    go_repository(
         name = "com_github_microsoft_go_winio",
         importpath = "github.com/Microsoft/go-winio",
         sum = "h1:a9IhgEQBCUEk6QCdml9CiJGhAws+YwffDHEMp1VMrpA=",
@@ -482,8 +489,8 @@ def go_dependencies():
     go_repository(
         name = "com_google_cloud_go",
         importpath = "cloud.google.com/go",
-        sum = "h1:t9Iw5QH5v4XtlEQaCtUY7x6sCABps8sW0acw7e2WQ6Y=",
-        version = "v0.100.2",
+        sum = "h1:g+LL+JvpvdyGtcaD2xw2mSByE/6F9s471eJSoaysM84=",
+        version = "v0.101.0",
     )
     go_repository(
         name = "com_google_cloud_go_bigquery",
@@ -521,8 +528,8 @@ def go_dependencies():
             "gazelle:resolve go google.golang.org/genproto/googleapis/storage/v2 @go_googleapis//google/storage/v2:storage_go_proto",
         ],
         importpath = "cloud.google.com/go/storage",
-        sum = "h1:5NQw6tOn3eMm0oE8vTkfjau18kjL79FlMjy/CHTpmoY=",
-        version = "v1.18.2",
+        sum = "h1:NUV0NNp9nkBuW66BFRLuMgldN60C57ET3dhbwLIYio8=",
+        version = "v1.22.0",
     )
     go_repository(
         name = "com_shuralyov_dmitri_gpu_mtl",

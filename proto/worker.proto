@@ -69,3 +69,19 @@ message WorkerConfig {
   // GCS bucket in which results should be placed
   string results_gcs_bucket = 4;
 }
+
+// TODO: Move this to another file?
+message DispatcherConfig {
+  oneof database {
+    //
+    SqliteConfig sqlite = 1;
+  }
+
+  string grpc_port = 2;
+}
+
+message SqliteConfig {
+  // Path to the database file on disk. If it doesn't exist, will be created.
+  // Parent directory should already exist.
+  string db_path = 1;
+}
