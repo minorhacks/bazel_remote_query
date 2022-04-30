@@ -22,6 +22,25 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_depe
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 load("//bazel:deps.bzl", "go_dependencies")
 
+# Before loading Go dependencies, override with our own (newer) versions
+http_archive(
+    name = "go_googleapis",
+    patch_args = [
+        "-E",
+        "-p1",
+    ],
+    patches = [
+        "//bazel:go_googleapis-deletebuild.patch",
+        "//bazel:go_googleapis-directives.patch",
+        "//bazel:go_googleapis-gazelle.patch",
+    ],
+    sha256 = "a8c632ea9155c7328c48cae8424bc489378c8c014886838e6aef44598bc23772",
+    strip_prefix = "googleapis-dfd09631f62640cca09cbbe7f1118e620e4abccf",
+    urls = [
+        "https://github.com/googleapis/googleapis/archive/dfd09631f62640cca09cbbe7f1118e620e4abccf.zip",
+    ],
+)
+
 # gazelle:repository_macro bazel/deps.bzl%go_dependencies
 go_dependencies()
 

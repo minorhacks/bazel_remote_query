@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -10,11 +9,12 @@ import (
 	"os"
 	"time"
 
+	"github.com/minorhacks/bazel_remote_query/db"
+	"github.com/minorhacks/bazel_remote_query/db/sqlite"
 	pb "github.com/minorhacks/bazel_remote_query/proto"
 
 	"github.com/golang/glog"
 	"github.com/google/uuid"
-	_ "github.com/mattn/go-sqlite3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -154,55 +154,8 @@ func (d *StaticDispatch) FinishQueryJob(ctx context.Context, req *pb.FinishQuery
 	return nil, status.Errorf(codes.Unimplemented, "FinishQueryJob not implemented")
 }
 
-type DB interface {
-	Get(context.Context, string /* id */) (string, error)
-	Insert(context.Context, string /* repo */, string /* committish */, string /* query */) (string, error)
-	Update(context.Context, string /* id */, string /* state */, string /* result */) error
-}
-
-type Sqlite struct {
-	db *sql.DB
-}
-
-func NewSqlite(ctx context.Context, dbPath string) (*Sqlite, error) {
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open sqlite database %q: %w", dbPath, err)
-	}
-	createTableStmt := `
-	CREATE TABLE IF NOT EXISTS "bazel_query_jobs" (
-		repository TEXT,
-		commit_hash TEXT,
-		query_string TEXT,
-		id TEXT,
-		status TEXT,
-		query_result_url TEXT,
-		query_error TEXT,
-		PRIMARY KEY(repository, commit_hash, query_string)
-	);
-	`
-	_, err = db.Exec(createTableStmt)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create 'bazel_query_jobs' table: %w", err)
-	}
-
-	return &Sqlite{db: db}, nil
-}
-
-func (s *Sqlite) Get(ctx context.Context, id string) (string, error) {
-	return "", fmt.Errorf("Get() not yet implemented")
-}
-
-func (s *Sqlite) Insert(ctx context.Context, repo string, committish string, query string) (string, error) {
-	return "", fmt.Errorf("Insert() not yet implemented")
-}
-
-func (s *Sqlite) Update(ctx context.Context, id string, state string, result string) error {
-	return fmt.Errorf("Update() not yet implemented")
-}
-
 type DatabaseDispatch struct {
-	db DB
+	db db.DB
 }
 
 func (d *DatabaseDispatch) GetQueryJob(ctx context.Context, req *pb.GetQueryJobRequest) (*pb.GetQueryJobResponse, error) {
@@ -211,6 +164,22 @@ func (d *DatabaseDispatch) GetQueryJob(ctx context.Context, req *pb.GetQueryJobR
 
 func (d *DatabaseDispatch) FinishQueryJob(ctx context.Context, req *pb.FinishQueryJobRequest) (*pb.FinishQueryJobResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "FinishQueryJob not implemented")
+}
+
+type DatabaseQueue struct {
+	db db.DB
+}
+
+func (q *DatabaseQueue) Queue(ctx context.Context, req *pb.QueueRequest) (*pb.QueueResponse, error) {
+	id, err := q.db.Insert(ctx, req.GetRepository(), req.GetCommitHash(), req.GetQueryString())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "db.Insert() failed: %w", err)
+	}
+	return &pb.QueueResponse{Id: id}, nil
+}
+
+func (q *DatabaseQueue) Poll(ctx context.Context, req *pb.PollRequest) (*pb.PollResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "Poll not implemented")
 }
 
 func main() {
@@ -224,14 +193,20 @@ func main() {
 
 	ctx := context.Background()
 
-	db, err := NewSqlite(ctx, config.GetSqlite().GetDbPath())
+	db, err := sqlite.New(ctx, config.GetSqlite().GetDbPath())
 	exitIf(err)
-	service := &DatabaseDispatch{
+
+	dispatchService := &DatabaseDispatch{
+		db: db,
+	}
+
+	queueService := &DatabaseQueue{
 		db: db,
 	}
 
 	srv := grpc.NewServer()
-	pb.RegisterQueryDispatcherServer(srv, service)
+	pb.RegisterQueryDispatchServer(srv, dispatchService)
+	pb.RegisterQueryQueueServer(srv, queueService)
 
 	glog.Infof("Listening on port %s", config.GetGrpcPort())
 	srv.Serve(conn)

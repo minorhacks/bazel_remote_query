@@ -138,7 +138,7 @@ func main() {
 	)
 	exitIf(err)
 	defer conn.Close()
-	client := pb.NewQueryDispatcherClient(conn)
+	client := pb.NewQueryDispatchClient(conn)
 
 	for {
 		// TODO: Get new job
