@@ -1,6 +1,6 @@
 module github.com/minorhacks/bazel_remote_query
 
-go 1.18
+go 1.17
 
 require (
 	cloud.google.com/go v0.101.0 // indirect
