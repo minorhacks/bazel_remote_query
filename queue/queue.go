@@ -13,6 +13,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+var timeNow = time.Now
+
 type DatabaseQueue struct {
 	DB db.DB
 }
@@ -48,7 +50,7 @@ func (q *DatabaseQueue) Poll(ctx context.Context, req *pb.PollRequest) (*pb.Poll
 	case db.StatusRunning:
 		res.Status = &pb.PollResponse_InProgress{
 			InProgress: &pb.PollResponse_QueryInProgress{
-				NextPollTime: timestamppb.New(time.Now().Add(5 * time.Second)), // TODO: parameterize
+				NextPollTime: timestamppb.New(timeNow().Add(5 * time.Second)), // TODO: parameterize
 			},
 		}
 	case db.StatusSucceeded:

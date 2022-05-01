@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "sqlite",
@@ -9,5 +9,15 @@ go_library(
         "//db",
         "@com_github_google_uuid//:uuid",
         "@com_github_mattn_go_sqlite3//:go-sqlite3",
+    ],
+)
+
+go_test(
+    name = "sqlite_test",
+    srcs = ["stress_test.go"],
+    embed = [":sqlite"],
+    deps = [
+        "//db",
+        "@com_github_stretchr_testify//assert",
     ],
 )

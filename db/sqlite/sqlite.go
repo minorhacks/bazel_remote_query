@@ -18,10 +18,11 @@ type Sqlite struct {
 }
 
 func New(ctx context.Context, dbPath string) (*Sqlite, error) {
-	db, err := sql.Open("sqlite3", dbPath)
+	sqlDB, err := sql.Open("sqlite3", fmt.Sprintf("%s?cache=shared", dbPath))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open sqlite database %q: %w", dbPath, err)
 	}
+	sqlDB.SetMaxOpenConns(1)
 	createTableStmt := `
 	CREATE TABLE IF NOT EXISTS "bazel_query_jobs" (
 		id TEXT NOT NULL,
@@ -38,12 +39,12 @@ func New(ctx context.Context, dbPath string) (*Sqlite, error) {
 		PRIMARY KEY(id)
 	);
 	`
-	_, err = db.Exec(createTableStmt)
+	_, err = sqlDB.Exec(createTableStmt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create 'bazel_query_jobs' table: %w", err)
 	}
 
-	return &Sqlite{db: db}, nil
+	return &Sqlite{db: sqlDB}, nil
 }
 
 func (s *Sqlite) EnqueueJob(ctx context.Context, job *db.QueryJob) (retErr error) {

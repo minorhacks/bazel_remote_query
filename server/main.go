@@ -18,9 +18,7 @@ import (
 	"google.golang.org/protobuf/encoding/prototext"
 )
 
-var (
-	configPath = flag.String("config", "", "Path to textproto DispatcherConfig")
-)
+var configPath = flag.String("config", "", "Path to textproto DispatcherConfig")
 
 func main() {
 	flag.Parse()
