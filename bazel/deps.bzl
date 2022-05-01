@@ -207,6 +207,12 @@ def go_dependencies():
         sum = "h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=",
         version = "v1.6.0",
     )
+    go_repository(
+        name = "com_github_go_yaml_yaml",
+        importpath = "github.com/go-yaml/yaml",
+        sum = "h1:RYi2hDdss1u4YE7GwixGzWwVo47T8UQwnTLB6vQiq+o=",
+        version = "v2.1.0+incompatible",
+    )
 
     go_repository(
         name = "com_github_golang_glog",

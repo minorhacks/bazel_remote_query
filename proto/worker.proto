@@ -131,6 +131,7 @@ message DispatcherConfig {
   oneof database {
     //
     SqliteConfig sqlite = 1;
+    DatastoreConfig datastore = 3;
   }
 
   string grpc_port = 2;
@@ -141,3 +142,5 @@ message SqliteConfig {
   // Parent directory should already exist.
   string db_path = 1;
 }
+
+message DatastoreConfig {}

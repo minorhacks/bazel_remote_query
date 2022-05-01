@@ -7,6 +7,8 @@ import (
 	"net"
 	"os"
 
+	"github.com/minorhacks/bazel_remote_query/db"
+	"github.com/minorhacks/bazel_remote_query/db/datastore"
 	"github.com/minorhacks/bazel_remote_query/db/sqlite"
 	"github.com/minorhacks/bazel_remote_query/dispatch"
 	pb "github.com/minorhacks/bazel_remote_query/proto"
@@ -31,15 +33,21 @@ func main() {
 
 	ctx := context.Background()
 
-	db, err := sqlite.New(ctx, config.GetSqlite().GetDbPath())
+	var database db.DB
+	switch dbConfig := config.Database.(type) {
+	case *pb.DispatcherConfig_Sqlite:
+		database, err = sqlite.New(ctx, dbConfig.Sqlite.GetDbPath())
+	case *pb.DispatcherConfig_Datastore:
+		database, err = datastore.New(ctx)
+	}
 	exitIf(err)
 
 	dispatchService := &dispatch.DatabaseDispatch{
-		DB: db,
+		DB: database,
 	}
 
 	queueService := &queue.DatabaseQueue{
-		DB: db,
+		DB: database,
 	}
 
 	srv := grpc.NewServer()

@@ -6,6 +6,8 @@ go_library(
     importpath = "github.com/minorhacks/bazel_remote_query/server",
     visibility = ["//visibility:private"],
     deps = [
+        "//db",
+        "//db/datastore",
         "//db/sqlite",
         "//dispatch",
         "//proto",
