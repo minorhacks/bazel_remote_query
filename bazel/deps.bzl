@@ -51,6 +51,12 @@ def go_dependencies():
         sum = "h1:1BDTz0u9nC3//pOCMdNH+CiXJVYJh5UQNCOBG7jbELc=",
         version = "v0.0.0-20160522181843-27f122750802",
     )
+    go_repository(
+        name = "com_github_cenkalti_backoff_v4",
+        importpath = "github.com/cenkalti/backoff/v4",
+        sum = "h1:c8LkOFQTzuO0WBM/ae5HdGQuZPfPxp7lqBRwQRm4fSc=",
+        version = "v4.1.0",
+    )
 
     go_repository(
         name = "com_github_census_instrumentation_opencensus_proto",
@@ -243,8 +249,8 @@ def go_dependencies():
     go_repository(
         name = "com_github_google_go_cmp",
         importpath = "github.com/google/go-cmp",
-        sum = "h1:81/ik6ipDQS2aGcBfIN5dHDB36BwrStyeAQquSYCV4o=",
-        version = "v0.5.7",
+        sum = "h1:e6P7q2lk1O+qJJb4BtCQXlK8vWEO8V1ZeuEdJNOqZyg=",
+        version = "v0.5.8",
     )
     go_repository(
         name = "com_github_google_martian",
@@ -379,6 +385,13 @@ def go_dependencies():
         version = "v0.2.0",
     )
     go_repository(
+        name = "com_github_kylelemons_godebug",
+        importpath = "github.com/kylelemons/godebug",
+        sum = "h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=",
+        version = "v1.1.0",
+    )
+
+    go_repository(
         name = "com_github_lib_pq",
         importpath = "github.com/lib/pq",
         sum = "h1:LXpIM/LZ5xGFhOpXAQUIMM1HdyqzVYM13zNdjCEEcA0=",
@@ -422,6 +435,30 @@ def go_dependencies():
         sum = "h1:KMrpdQIwFcEqXDklaen+P1axHaj9BSKzvpUUfnHldSE=",
         version = "v1.2.2",
     )
+    go_repository(
+        name = "com_github_openconfig_gnmi",
+        importpath = "github.com/openconfig/gnmi",
+        sum = "h1:3Cr2M3Gc0Zufn1g7tSOkz/OA2gqfvyp9JyWrwPld2aY=",
+        version = "v0.0.0-20220429193428-5bf343012eed",
+    )
+    go_repository(
+        name = "com_github_openconfig_goyang",
+        importpath = "github.com/openconfig/goyang",
+        sum = "h1:5MyIz4bN4vpH6aHDN339bkWXAjTkhg1ZKMhR4aIi5Rk=",
+        version = "v0.0.0-20200115183954-d0a48929f0ea",
+    )
+    go_repository(
+        name = "com_github_openconfig_grpctunnel",
+        importpath = "github.com/openconfig/grpctunnel",
+        sum = "h1:zrs4U92QEAadFotQyidT4U8iZDJO67pXsS4r64uAHik=",
+        version = "v0.0.0-20210610163803-fde4a9dc048d",
+    )
+    go_repository(
+        name = "com_github_openconfig_ygot",
+        importpath = "github.com/openconfig/ygot",
+        sum = "h1:kJJFPBrczC6TDnz/HMlFTJEdW2CuyUftV13XveIukg0=",
+        version = "v0.6.0",
+    )
 
     go_repository(
         name = "com_github_pkg_errors",
@@ -436,6 +473,13 @@ def go_dependencies():
         sum = "h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=",
         version = "v1.0.0",
     )
+    go_repository(
+        name = "com_github_prashantv_gostub",
+        importpath = "github.com/prashantv/gostub",
+        sum = "h1:BTyx3RfQjRHnUWaGF9oQos79AlQ5k8WNktv7VGvVH4g=",
+        version = "v1.1.0",
+    )
+
     go_repository(
         name = "com_github_prometheus_client_model",
         importpath = "github.com/prometheus/client_model",

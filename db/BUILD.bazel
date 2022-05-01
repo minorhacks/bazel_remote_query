@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "db",
-    srcs = ["db.go"],
+    srcs = [
+        "db.go",
+        "fake.go",
+    ],
     importpath = "github.com/minorhacks/bazel_remote_query/db",
     visibility = ["//visibility:public"],
 )

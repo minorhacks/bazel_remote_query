@@ -1,6 +1,3 @@
-# Default to remote builds
-build --config=remote
-
 # Options for remote builds
 build:remote --jobs=50
 build:remote --java_runtime_version=rbe_jdk

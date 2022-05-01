@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "testutil",
+    srcs = [
+        "assert.go",
+        "error.go",
+        "time.go",
+    ],
+    importpath = "github.com/minorhacks/bazel_remote_query/testutil",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_google_go_cmp//cmp",
+        "@org_golang_google_protobuf//testing/protocmp",
+    ],
+)

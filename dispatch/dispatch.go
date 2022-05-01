@@ -13,15 +13,16 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+var timeNow = time.Now
+
 type DatabaseDispatch struct {
 	DB db.DB
 }
 
 func (d *DatabaseDispatch) GetQueryJob(ctx context.Context, req *pb.GetQueryJobRequest) (*pb.GetQueryJobResponse, error) {
 	res := &pb.GetQueryJobResponse{
-		NextPollTime: timestamppb.New(time.Now().Add(10 * time.Second)), // TODO: parameterize
+		NextPollTime: timestamppb.New(timeNow().Add(10 * time.Second)), // TODO: parameterize
 	}
-
 	job, err := d.DB.DequeueJob(ctx, req.GetWorkerName())
 	if err != nil && errors.Is(err, db.ErrNoOutstandingJobs) {
 		return res, nil
