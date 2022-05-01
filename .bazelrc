@@ -1,0 +1,18 @@
+# Default to remote builds
+build --config=remote
+
+# Options for remote builds
+build:remote --jobs=50
+build:remote --java_runtime_version=rbe_jdk
+build:remote --tool_java_runtime_version=rbe_jdk
+build:remote --extra_toolchains=//bazel/rbe/java:all
+build:remote --crosstool_top=//bazel/rbe/cc:toolchain
+build:remote --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build:remote --extra_toolchains=//bazel/rbe/config:cc-toolchain
+build:remote --extra_execution_platforms=//bazel/rbe/config:platform
+build:remote --host_platform=//bazel/rbe/config:platform
+build:remote --platforms=//bazel/rbe/config:platform
+build:remote --define=EXECUTOR=remote
+build:remote --remote_executor=grpc://172.16.1.107:30531
+build:remote --incompatible_strict_action_env=true
+build:remote --remote_timeout=3600
