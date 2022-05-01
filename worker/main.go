@@ -20,7 +20,9 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/prototext"
 )
 
@@ -33,11 +35,11 @@ type Worker struct {
 	gcsBucket    *storage.BucketHandle
 }
 
-func (w *Worker) HandleJob(ctx context.Context, job *pb.QueryJob) error {
+func (w *Worker) HandleJob(ctx context.Context, job *pb.QueryJob) (string, error) {
 	repo := job.GetSource().GetRepo()
 	workspace, ok := w.workspaceMap[repo]
 	if !ok {
-		return fmt.Errorf("workspace for repo %q not found", repo)
+		return "", fmt.Errorf("workspace for repo %q not found", repo)
 	}
 
 	ref := job.GetSource().GetCommittish()
@@ -45,18 +47,18 @@ func (w *Worker) HandleJob(ctx context.Context, job *pb.QueryJob) error {
 		RefSpecs: []gitconfig.RefSpec{gitconfig.RefSpec(fmt.Sprintf("+%s:%s", ref, ref))},
 		Force:    true,
 	}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
-		return fmt.Errorf("failed to fetch ref %q: %w", ref, err)
+		return "", fmt.Errorf("failed to fetch ref %q: %w", ref, err)
 	}
 
 	wt, err := workspace.repo.Worktree()
 	if err != nil {
-		return fmt.Errorf("failed to get worktree for %q: %w", repo, err)
+		return "", fmt.Errorf("failed to get worktree for %q: %w", repo, err)
 	}
 	if err := wt.Checkout(&git.CheckoutOptions{
 		Hash:  plumbing.NewHash(ref), // TODO: doesn't work for branch names, etc.
 		Force: true,
 	}); err != nil {
-		return fmt.Errorf("failed to checkout ref %q: %w", ref, err)
+		return "", fmt.Errorf("failed to checkout ref %q: %w", ref, err)
 	}
 	glog.V(1).Infof("Checkout successful")
 
@@ -65,24 +67,22 @@ func (w *Worker) HandleJob(ctx context.Context, job *pb.QueryJob) error {
 	defer cancel()
 	res, err := workspace.Query(ctx, job.GetQuery())
 	if err != nil {
-		return err
+		return "", err
 	}
 	glog.V(1).Infof("Query successful")
 
 	// If success, upload result to GCS
 	objName := fmt.Sprintf("%s.pb", job.GetId())
-	obj := w.gcsBucket.Object(objName).NewWriter(ctx)
-	if _, err := io.Copy(obj, res); err != nil {
-		return fmt.Errorf("failed to copy results to GCS: %w", err)
+	obj := w.gcsBucket.Object(objName)
+	objWriter := obj.NewWriter(ctx)
+	if _, err := io.Copy(objWriter, res); err != nil {
+		return "", fmt.Errorf("failed to copy results to GCS: %w", err)
 	}
-	if err := obj.Close(); err != nil {
-		return fmt.Errorf("failed to flush results to GCS: %w", err)
+	if err := objWriter.Close(); err != nil {
+		return "", fmt.Errorf("failed to flush results to GCS: %w", err)
 	}
 	glog.V(1).Infof("Upload successful")
-	return nil
-	// If failure, get error
-	// Finish job
-	// Sleep until next poll time
+	return fmt.Sprintf("gs://%s/%s", obj.BucketName(), obj.ObjectName()), nil
 
 }
 
@@ -127,7 +127,7 @@ func main() {
 	config, err := loadConfig(*configPath)
 	exitIf(err)
 
-	// TODO: Initialize repositories
+	// TODO: Parameterize tiem
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
 	worker, err := New(ctx, config)
 	exitIf(err)
@@ -141,17 +141,42 @@ func main() {
 	client := pb.NewQueryDispatchClient(conn)
 
 	for {
-		// TODO: Get new job
-		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute) // TODO: parameterize
+		defer cancel()
 		job, err := client.GetQueryJob(ctx, &pb.GetQueryJobRequest{})
-		exitIf(err) // TODO: handle error
-
-		if j := job.GetJob(); j != nil {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-			defer cancel()
-			err = worker.HandleJob(ctx, j)
-			logIfErr("processing job", err)
+		st, ok := status.FromError(err)
+		if !ok {
+			glog.Errorf("Failed to get next query job: %v", err)
+			time.Sleep(5 * time.Second) // TODO: parameterize
+			continue
+		} else if st.Code() != codes.OK {
+			glog.Errorf("Failed to get next query job: %v", st.Message())
+			time.Sleep(5 * time.Second) // TODO: parameterize
+			continue
 		}
+
+		nextPoll := job.GetNextPollTime().AsTime()
+		if j := job.GetJob(); j != nil {
+			url, err := worker.HandleJob(ctx, j)
+			req := &pb.FinishQueryJobRequest{
+				QueryJobId: j.GetId(),
+			}
+			if err != nil {
+				req.Result = &pb.FinishQueryJobRequest_FailureMessage{
+					FailureMessage: err.Error(),
+				}
+			} else {
+				req.Result = &pb.FinishQueryJobRequest_QueryResultGcsLocation{
+					QueryResultGcsLocation: url,
+				}
+			}
+			_, err = client.FinishQueryJob(ctx, req)
+			logIfErr("sending FinishQuery request", err)
+			glog.Infof("Finished processing job")
+		} else {
+			glog.Infof("No pending queries; sleeping until %s", nextPoll.String())
+		}
+		time.Sleep(time.Until(nextPoll))
 	}
 }
 

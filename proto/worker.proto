@@ -61,7 +61,11 @@ service QueryDispatch {
   rpc FinishQueryJob(FinishQueryJobRequest) returns (FinishQueryJobResponse);
 }
 
-message GetQueryJobRequest {}
+message GetQueryJobRequest {
+  // Name of the worker making the request. This helps audit which jobs were
+  // assigned to which workers, in case workers go away or behave poorly.
+  string worker_name = 1;
+}
 
 message GetQueryJobResponse {
   // If there is a job available, this message describes the query the worker

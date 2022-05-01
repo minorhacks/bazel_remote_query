@@ -195,6 +195,12 @@ def go_dependencies():
         sum = "h1:WtGNWLvXpe6ZudgnXrq0barxBImvnnJoMEhXAzcbM0I=",
         version = "v0.0.0-20200222043503-6f7a984d4dc4",
     )
+    go_repository(
+        name = "com_github_go_sql_driver_mysql",
+        importpath = "github.com/go-sql-driver/mysql",
+        sum = "h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=",
+        version = "v1.6.0",
+    )
 
     go_repository(
         name = "com_github_golang_glog",
@@ -322,6 +328,13 @@ def go_dependencies():
         version = "v1.5.0",
     )
     go_repository(
+        name = "com_github_jmoiron_sqlx",
+        importpath = "github.com/jmoiron/sqlx",
+        sum = "h1:vFFPA71p1o5gAeqtEAwLU4dnX2napprKtHr7PYIcN3g=",
+        version = "v1.3.5",
+    )
+
+    go_repository(
         name = "com_github_jstemmer_go_junit_report",
         importpath = "github.com/jstemmer/go-junit-report",
         sum = "h1:6QPYqodiu3GuPL+7mfx+NwDdp2eTkp9IfEUpgAwUN0o=",
@@ -365,6 +378,13 @@ def go_dependencies():
         sum = "h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=",
         version = "v0.2.0",
     )
+    go_repository(
+        name = "com_github_lib_pq",
+        importpath = "github.com/lib/pq",
+        sum = "h1:LXpIM/LZ5xGFhOpXAQUIMM1HdyqzVYM13zNdjCEEcA0=",
+        version = "v1.2.0",
+    )
+
     go_repository(
         name = "com_github_matryer_is",
         importpath = "github.com/matryer/is",
