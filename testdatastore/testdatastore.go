@@ -31,6 +31,9 @@ func startEmulator(ctx context.Context, dataDir string, writeToDisk bool) (*exec
 	ctx, ctxCancel := context.WithCancel(ctx)
 	args := []string{
 		"gcloud",
+		// This is not a valid project ID, but seems to be sufficient to
+		// convince gcloud CLI to launch the emulator.
+		"--project=empty",
 		"beta",
 		"emulators",
 		"datastore",
