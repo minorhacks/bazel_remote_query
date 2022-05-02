@@ -40,7 +40,7 @@ func startEmulator(ctx context.Context, dataDir string, writeToDisk bool) (*exec
 	if !writeToDisk {
 		args = append(args, "--no-store-on-disk")
 	}
-	cmd := exec.Command(args[0], args[1:]...)
+	cmd := exec.CommandContext(ctx, args[0], args[1:]...)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	if err := cmd.Start(); err != nil {

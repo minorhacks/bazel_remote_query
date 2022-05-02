@@ -5,5 +5,12 @@ go_library(
     srcs = ["datastore.go"],
     importpath = "github.com/minorhacks/bazel_remote_query/db/datastore",
     visibility = ["//visibility:public"],
-    deps = ["//db"],
+    deps = [
+        "//db",
+        "@com_github_google_uuid//:uuid",
+        "@com_google_cloud_go_datastore//:datastore",
+        "@org_golang_google_api//iterator",
+        "@org_golang_google_grpc//codes",
+        "@org_golang_google_grpc//status",
+    ],
 )

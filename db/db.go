@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"io"
 	"time"
 )
 
@@ -19,17 +20,17 @@ var (
 )
 
 type QueryJob struct {
-	Repository  string
-	CommitHash  string
-	Query       string
-	ID          string
-	Status      string
-	Worker      *string
-	QueueTime   time.Time
-	StartTime   *time.Time
-	FinishTime  *time.Time
-	ResultURL   *string
-	ResultError *string
+	Repository  string     `datastore:"repository"`
+	CommitHash  string     `datastore:"commit_hash"`
+	Query       string     `datastore:"query_string"`
+	ID          string     `datastore:"id"`
+	Status      string     `datastore:"status"`
+	Worker      *string    `datastore:"worker"`
+	QueueTime   time.Time  `datastore:"queue_time"`
+	StartTime   *time.Time `datastore:"start_time"`
+	FinishTime  *time.Time `datastore:"finish_time"`
+	ResultURL   *string    `datastore:"result_url"`
+	ResultError *string    `datastore:"result_error"`
 }
 
 // The invariants of the DB are:
@@ -57,4 +58,6 @@ type DB interface {
 	GetJob(ctx context.Context, id string) (*QueryJob, error)
 
 	FinishJob(ctx context.Context, id string, status string, result string) error
+
+	io.Closer
 }

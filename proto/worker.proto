@@ -143,4 +143,7 @@ message SqliteConfig {
   string db_path = 1;
 }
 
-message DatastoreConfig {}
+message DatastoreConfig {
+  // GCP project ID with Datastore DB to use
+  string gcp_project = 1;
+}

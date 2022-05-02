@@ -47,6 +47,10 @@ func New(ctx context.Context, dbPath string) (*Sqlite, error) {
 	return &Sqlite{db: sqlDB}, nil
 }
 
+func (s *Sqlite) Close() error {
+	return s.db.Close()
+}
+
 func (s *Sqlite) EnqueueJob(ctx context.Context, job *db.QueryJob) (retErr error) {
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
 	if err != nil {

@@ -17,6 +17,8 @@ type Fake struct {
 	FinishJobErr  error
 }
 
+func (f *Fake) Close() error { return nil }
+
 func (f *Fake) EnqueueJob(ctx context.Context, job *QueryJob) error {
 	if f.EnqueueJobErr != nil {
 		return f.EnqueueJobErr

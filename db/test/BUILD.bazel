@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
+
+go_test(
+    name = "test_test",
+    size = "medium",
+    srcs = ["stress_test.go"],
+    tags = ["no-remote"],
+    deps = [
+        "//db",
+        "//db/datastore",
+        "//db/sqlite",
+        "//testdatastore",
+        "@com_github_stretchr_testify//assert",
+    ],
+)

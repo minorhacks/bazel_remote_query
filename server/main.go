@@ -38,9 +38,10 @@ func main() {
 	case *pb.DispatcherConfig_Sqlite:
 		database, err = sqlite.New(ctx, dbConfig.Sqlite.GetDbPath())
 	case *pb.DispatcherConfig_Datastore:
-		database, err = datastore.New(ctx)
+		database, err = datastore.New(ctx, dbConfig.Datastore.GetGcpProject())
 	}
 	exitIf(err)
+	defer database.Close()
 
 	dispatchService := &dispatch.DatabaseDispatch{
 		DB: database,
