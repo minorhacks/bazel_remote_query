@@ -199,7 +199,7 @@ func (d *DB) FinishJob(ctx context.Context, id string, status string, result str
 			return fmt.Errorf("can't finish job using status %q", status)
 		}
 
-		_, err = tx.Put(key, job)
+		_, err = tx.Put(key, &job)
 		if err != nil {
 			return fmt.Errorf("failed to mark job %s as done: %w", id, err)
 		}

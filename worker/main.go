@@ -26,9 +26,7 @@ import (
 	"google.golang.org/protobuf/encoding/prototext"
 )
 
-var (
-	configPath = flag.String("config", "", "Path to textproto WorkerConfig")
-)
+var configPath = flag.String("config", "", "Path to textproto WorkerConfig")
 
 type Worker struct {
 	workspaceMap map[string]*Workspace
@@ -83,7 +81,6 @@ func (w *Worker) HandleJob(ctx context.Context, job *pb.QueryJob) (string, error
 	}
 	glog.V(1).Infof("Upload successful")
 	return fmt.Sprintf("gs://%s/%s", obj.BucketName(), obj.ObjectName()), nil
-
 }
 
 type Workspace struct {
@@ -143,7 +140,9 @@ func main() {
 	for {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute) // TODO: parameterize
 		defer cancel()
-		job, err := client.GetQueryJob(ctx, &pb.GetQueryJobRequest{})
+		job, err := client.GetQueryJob(ctx, &pb.GetQueryJobRequest{
+			WorkerName: config.GetWorkerName(),
+		})
 		st, ok := status.FromError(err)
 		if !ok {
 			glog.Errorf("Failed to get next query job: %v", err)

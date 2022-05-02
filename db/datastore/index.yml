@@ -1,0 +1,15 @@
+# After editing, deploy this to gcloud with:
+#
+# gcloud --project=<SETME> datastore indexes create db/datastore/index.yml
+indexes:
+  - kind: QueryJob
+    properties:
+      - name: status
+      - name: queue_time
+        direction: asc
+
+  - kind: QueryJob
+    properties:
+      - name: repository
+      - name: commit_hash
+      - name: query_string

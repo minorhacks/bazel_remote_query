@@ -124,6 +124,9 @@ message WorkerConfig {
 
   // GCS bucket in which results should be placed
   string results_gcs_bucket = 4;
+
+  // Name of this worker
+  string worker_name = 5;
 }
 
 // TODO: Move this to another file?

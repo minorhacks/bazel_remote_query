@@ -1,3 +1,4 @@
+worker_name: "worker-0"
 dispatcher_address: "127.0.0.1:8082"
 base_dir: "/home/bminor/tmp/bazel_remote_query_worker"
 git_repository_urls: "https://github.com/grpc/grpc"
